@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulário de Funcionários e Setores</title>
+    <script src="https://unpkg.com/pdf-lib"></script>
+    <style>
+        /* Design otimizado e profissional */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        h1 {
+            text-align: center;
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: bold;
+            margin-top: 10px;
+            display: block;
+            color: #555;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            background-color: #28a745;
+            color: white;
+            font-size: 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            h1 {
+                font-size: 20px;
+            }
+            input, textarea {
+                font-size: 14px;
+            }
+            button {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Informações para cadastros no ERP</h1>
+        
+        <form id="infoForm">
+            <label for="marketName">Nome do Mercado:</label>
+            <input type="text" id="marketName" name="marketName" required>
+
+            <label for="erpUsers">Nomes dos usuários que irão usar o ERP:</label>
+            <textarea id="erpUsers" name="erpUsers" rows="3" required></textarea>
+
+            <label for="cashOperators">Nome das operadoras de caixa:</label>
+            <textarea id="cashOperators" name="cashOperators" rows="3" required></textarea>
+
+            <label for="cashSupervisors">Nome das fiscais de caixa:</label>
+            <textarea id="cashSupervisors" name="cashSupervisors" rows="3" required></textarea>
+
+            <h2>Funcionários por Setores:</h2>
+
+            <label for="finance">Financeiro:</label>
+            <textarea id="finance" name="finance" rows="2" required></textarea>
+
+            <label for="admin">Administrativo:</label>
+            <textarea id="admin" name="admin" rows="2" required></textarea>
+
+            <label for="commercial">Comercial:</label>
+            <textarea id="commercial" name="commercial" rows="2" required></textarea>
+
+            <label for="invoiceEntry">Entrada de notas fiscais:</label>
+            <textarea id="invoiceEntry" name="invoiceEntry" rows="2" required></textarea>
+
+            <label for="accounting">Contabilidade:</label>
+            <textarea id="accounting" name="accounting" rows="2" required></textarea>
+
+            <label for="it">T.I:</label>
+            <textarea id="it" name="it" rows="2" required></textarea>
+
+            <h2>Entidades Financeiras</h2>
+
+            <label for="financialEntities">Quais Entidades Financeiras usam:</label>
+            <textarea id="financialEntities" name="financialEntities" rows="2" required></textarea>
+
+            <label for="bankAccount">Banco e conta corrente para pagamento de fornecedor:</label>
+            <textarea id="bankAccount" name="bankAccount" rows="2" required></textarea>
+
+            <button type="button" onclick="generatePDF()">Gerar PDF</button>
+        </form>
+    </div>
+
+    <script>
+        async function generatePDF() {
+            const { PDFDocument, rgb } = PDFLib;
+
+            // Captura os valores do formulário
+            const marketName = document.getElementById("marketName").value;
+            const erpUsers = document.getElementById("erpUsers").value;
+            const cashOperators = document.getElementById("cashOperators").value;
+            const cashSupervisors = document.getElementById("cashSupervisors").value;
+            const finance = document.getElementById("finance").value;
+            const admin = document.getElementById("admin").value;
+            const commercial = document.getElementById("commercial").value;
+            const invoiceEntry = document.getElementById("invoiceEntry").value;
+            const accounting = document.getElementById("accounting").value;
+            const it = document.getElementById("it").value;
+            const financialEntities = document.getElementById("financialEntities").value;
+            const bankAccount = document.getElementById("bankAccount").value;
+
+            // Criar novo documento PDF
+            const pdfDoc = await PDFDocument.create();
+            const pageWidth = 600;
+            const pageHeight = 800;
+            const margin = 50;
+            let yPosition = pageHeight - margin;
+
+            // Adicionar uma nova página ao documento
+            let page = pdfDoc.addPage([pageWidth, pageHeight]);
+
+            // Definir fonte e cor
+            const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+            const fontSize = 12;
+            const lineHeight = 20;
+
+            // Função para adicionar texto e verificar a necessidade de nova página
+            function addText(content) {
+                const lines = content.split('\n');
+                lines.forEach(line => {
+                    if (yPosition - lineHeight < margin) {
+                        // Se o conteúdo exceder a página, adiciona uma nova página
+                        page = pdfDoc.addPage([pageWidth, pageHeight]);
+                        yPosition = pageHeight - margin;
+                    }
+                    page.drawText(line, { x: margin, y: yPosition, size: fontSize, font, color: rgb(0, 0, 0) });
+                    yPosition -= lineHeight;
+                });
+                yPosition -= 10; // Adiciona espaço entre seções
+            }
+
+            // Adicionar seções ao PDF
+            addText(`Nome do Mercado: ${marketName}`);
+            addText(`Usuários do ERP: ${erpUsers}`);
+            addText(`Operadoras de Caixa: ${cashOperators}`);
+            addText(`Fiscais de Caixa: ${cashSupervisors}`);
+            addText(`Financeiro: ${finance}`);
+            addText(`Administrativo: ${admin}`);
+            addText(`Comercial: ${commercial}`);
+            addText(`Entrada de Notas Fiscais: ${invoiceEntry}`);
+            addText(`Contabilidade: ${accounting}`);
+            addText(`T.I: ${it}`);
+            addText(`Entidades Financeiras: ${financialEntities}`);
+            addText(`Banco e Conta Corrente para Pagamento de Fornecedor: ${bankAccount}`);
+
+            // Gerar o PDF
+            const pdfBytes = await pdfDoc.save();
+            const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+
+            // Criar link para download
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'Relatorio_Funcionarios_Setores.pdf';
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
